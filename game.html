@@ -1,0 +1,366 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Угадай аромат AirWick</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap">
+<style>
+:root{
+  --bg:#efeaf7; --ink:#2a1f45; --muted:#7a6f93; --card:#ffffff; --line:#e3dcef;
+  --violet:#5b2d9e; --violet2:#8a5cd6; --lilac:#d9ccf2; --ok:#1f9d6b; --bad:#d6455d; --gold:#f2b632;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Manrope,"Segoe UI",Arial,sans-serif}
+body{min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:24px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
+.phone{width:100%;max-width:390px;min-height:760px;background:linear-gradient(180deg,#fbf9ff 0%,#f3eefc 100%);border-radius:32px;box-shadow:0 20px 60px rgba(60,30,110,.18);overflow:hidden;position:relative;display:flex;flex-direction:column}
+@media (max-width:430px){body{padding:0}.phone{border-radius:0;min-height:100vh;box-shadow:none}}
+.top{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 8px;font-size:13px;font-weight:700}
+.brand{display:flex;align-items:center;gap:8px;color:var(--violet);font-weight:800;letter-spacing:.02em}
+.drop{width:22px;height:22px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:linear-gradient(135deg,var(--violet2),var(--violet))}
+.hud{display:flex;gap:10px;align-items:center}
+.pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-weight:700;font-size:12px;white-space:nowrap}
+.hearts{color:var(--bad);letter-spacing:2px}
+.screen{flex:1;display:flex;flex-direction:column;padding:8px 20px 20px;gap:14px}
+.screen[hidden]{display:none!important}
+h1{font-size:28px;line-height:1.1;margin:8px 0 0;font-weight:800;text-wrap:balance}
+h2{font-size:20px;margin:0;font-weight:800;text-wrap:balance}
+p{margin:0;line-height:1.45}
+.muted{color:var(--muted);font-size:13px}
+.btn{appearance:none;border:0;border-radius:16px;padding:15px 18px;font:inherit;font-weight:800;font-size:16px;cursor:pointer;background:linear-gradient(135deg,var(--violet2),var(--violet));color:#fff;box-shadow:0 8px 20px rgba(91,45,158,.28)}
+.btn.ghost{background:var(--card);color:var(--violet);box-shadow:none;border:1.5px solid var(--lilac)}
+.btn:active{transform:translateY(1px)}
+.hero{border-radius:24px;padding:22px;background:radial-gradient(circle at 80% 10%,#c9b3f5 0,#8a5cd6 40%,#4a2386 100%);color:#fff;position:relative;overflow:hidden}
+.hero .wisp{position:absolute;border-radius:50%;filter:blur(18px);opacity:.55}
+.rules{display:grid;gap:10px}
+.rule{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px}
+.num{flex:0 0 28px;height:28px;border-radius:50%;background:var(--lilac);color:var(--violet);display:grid;place-items:center;font-weight:800;font-size:13px}
+/* карта дома */
+.house{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:14px}
+.roof{height:44px;margin:0 auto 8px;width:86%;clip-path:polygon(50% 0,100% 100%,0 100%);background:linear-gradient(180deg,#cdbcef,#b39ce6)}
+.rooms{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.room{border-radius:16px;padding:12px;min-height:96px;display:flex;flex-direction:column;justify-content:space-between;background:#f1eff5;color:#9a93a8;border:1.5px dashed #d8d2e2;position:relative;overflow:hidden}
+.room b{font-size:14px}
+.room .st{font-size:15px;letter-spacing:2px}
+.room.open{background:#fff;color:var(--ink);border:1.5px solid var(--violet2);cursor:pointer;box-shadow:0 6px 16px rgba(138,92,214,.18)}
+.room.done{border:0;color:#fff;text-shadow:0 1px 4px rgba(40,10,60,.45)}
+.room.done .glow{position:absolute;inset:-30%;opacity:.9;z-index:0}
+.room > *{position:relative;z-index:1}
+.room small{font-size:11px;font-weight:600;opacity:.9}
+/* раунд */
+.timer{height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.timer i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--gold),var(--violet2));transition:width .2s linear}
+.clues{display:grid;gap:8px}
+.clue{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;font-size:15px;line-height:1.4;animation:in .35s ease}
+.clue .k{display:block;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--violet2);margin-bottom:3px}
+.clue.locked{background:transparent;border-style:dashed;color:var(--muted);font-size:13px;text-align:center}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ans{appearance:none;border:1.5px solid var(--line);background:var(--card);border-radius:16px;padding:10px;font:inherit;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:8px;min-height:104px;color:var(--ink)}
+.ans .sw{height:40px;border-radius:12px}
+.ans span{font-weight:700;font-size:13.5px;line-height:1.2}
+.ans.ok{border-color:var(--ok);box-shadow:0 0 0 3px rgba(31,157,107,.2)}
+.ans.no{border-color:var(--bad);opacity:.7}
+.ans:disabled{cursor:default}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.hint{appearance:none;background:none;border:0;color:var(--violet);font:inherit;font-weight:800;font-size:14px;cursor:pointer;padding:6px 0}
+.hint:disabled{color:var(--muted);cursor:default}
+.fb{border-radius:20px;padding:14px 16px;animation:in .3s ease}
+.fb.good{background:#e3f6ee}
+.fb.bad{background:#fbe7eb}
+.fb b{font-size:16px}
+.mult{display:inline-block;background:var(--gold);color:#3b2a00;border-radius:999px;padding:2px 8px;font-size:12px;font-weight:800;margin-left:6px}
+/* карточка товара */
+.prod{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px}
+.bottle{flex:0 0 64px;height:84px;border-radius:14px;position:relative;overflow:hidden}
+.bottle:after{content:"";position:absolute;left:24px;top:-6px;width:4px;height:60px;background:#7a5a3a;box-shadow:8px 4px 0 #7a5a3a,-8px 6px 0 #7a5a3a;border-radius:2px}
+.bottle .glass{position:absolute;left:10px;right:10px;bottom:6px;height:46px;border-radius:10px 10px 14px 14px;background:rgba(255,255,255,.55);border:1.5px solid rgba(255,255,255,.9)}
+.coupon{border:2px dashed var(--violet2);border-radius:18px;padding:14px;background:#f7f2ff;text-align:center}
+.coupon code{display:block;font-size:20px;font-weight:800;letter-spacing:.12em;color:var(--violet);margin:6px 0}
+.score-big{font-size:46px;font-weight:800;color:var(--violet);line-height:1}
+.toast{position:absolute;left:16px;right:16px;bottom:18px;background:var(--ink);color:#fff;border-radius:14px;padding:12px 14px;font-size:13px;font-weight:600;opacity:0;transform:translateY(10px);transition:.25s;pointer-events:none;z-index:9}
+.toast.show{opacity:1;transform:none}
+.spacer{flex:1}
+.tag{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--violet2)}
+</style>
+
+<div class="phone">
+  <div class="top">
+    <div class="brand"><div class="drop"></div>AirWick</div>
+    <div class="hud">
+      <span class="pill" id="hudScore">0 очков</span>
+      <span class="pill hearts" id="hudLives">♥♥♥</span>
+    </div>
+  </div>
+
+  <!-- 1. Старт -->
+  <section class="screen" id="sIntro">
+    <div class="hero">
+      <div class="wisp" style="width:120px;height:120px;background:#ffd36e;right:-20px;top:-20px"></div>
+      <div class="wisp" style="width:90px;height:90px;background:#ff9ec4;left:-20px;bottom:-30px"></div>
+      <div class="tag" style="color:#efe6ff">Игра к 8 марта</div>
+      <h1>Угадай аромат<br>по описанию</h1>
+      <p style="margin-top:10px;opacity:.92">Через экран аромат не понюхать. Зато его можно узнать по трём подсказкам и наполнить ароматом каждую комнату дома</p>
+    </div>
+    <div class="rules">
+      <div class="rule"><div class="num">1</div><p><b>Читай подсказку и выбирай аромат.</b> <span class="muted">С первой подсказки 300 очков, со второй 200, с третьей 100. Плюс бонус за скорость</span></p></div>
+      <div class="rule"><div class="num">2</div><p><b>Три верных ответа подряд дают ×2.</b> <span class="muted">Ошибка забирает одну жизнь, в день их три</span></p></div>
+      <div class="rule"><div class="num">3</div><p><b>Пройди комнату, и она наполнится ароматом.</b> <span class="muted">Четыре комнаты дают купон на диффузор и участие в недельном розыгрыше</span></p></div>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn" id="btnStart">Играть</button>
+  </section>
+
+  <!-- 2. Карта дома -->
+  <section class="screen" id="sMap" hidden>
+    <div>
+      <div class="tag">Твой дом</div>
+      <h2 id="mapTitle">Выбери комнату</h2>
+      <p class="muted" id="mapSub" style="margin-top:4px">В каждой комнате три аромата. Пройди все четыре</p>
+    </div>
+    <div class="house">
+      <div class="roof"></div>
+      <div class="rooms" id="rooms"></div>
+    </div>
+    <p class="muted">В рабочей версии новая комната открывается каждый день: игрок возвращается на лендинг четыре дня подряд</p>
+    <div class="spacer"></div>
+    <button class="btn ghost" id="btnFinal" hidden>Забрать награду</button>
+  </section>
+
+  <!-- 3. Раунд -->
+  <section class="screen" id="sRound" hidden>
+    <div class="row">
+      <div><div class="tag" id="rRoom">Гостиная</div><h2 id="rTitle">Аромат 1 из 3</h2></div>
+      <span class="pill" id="rStreak">серия 0</span>
+    </div>
+    <div class="timer"><i id="timerBar"></i></div>
+    <div class="clues" id="clues"></div>
+    <div class="row">
+      <button class="hint" id="btnHint">Ещё подсказка −100</button>
+      <span class="muted" id="rWorth">за ответ 300</span>
+    </div>
+    <div class="answers" id="answers"></div>
+    <div id="fb"></div>
+    <div class="spacer"></div>
+    <button class="btn" id="btnNext" hidden>Дальше</button>
+  </section>
+
+  <!-- 4. Комната пройдена -->
+  <section class="screen" id="sRoomDone" hidden>
+    <div>
+      <div class="tag" id="dRoom">Гостиная</div>
+      <h2 id="dTitle">Комната наполнена ароматом</h2>
+      <p class="muted" id="dSub" style="margin-top:4px"></p>
+    </div>
+    <div class="room done" id="dRoomTile" style="min-height:120px"></div>
+    <div class="tag">Твой аромат для этой комнаты</div>
+    <div class="prod" id="dProd"></div>
+    <button class="btn ghost" id="btnShop">Смотреть диффузор</button>
+    <div class="spacer"></div>
+    <button class="btn" id="btnBackMap">К дому</button>
+  </section>
+
+  <!-- 5. Жизни кончились -->
+  <section class="screen" id="sNoLives" hidden>
+    <div class="spacer"></div>
+    <div style="text-align:center;display:grid;gap:10px">
+      <div style="font-size:44px;color:var(--bad)">♡♡♡</div>
+      <h2>Жизни закончились</h2>
+      <p class="muted">Новые три жизни завтра. Одну можно вернуть сейчас: открой карточку любого диффузора AirWick и вернись в игру</p>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn" id="btnLife">Открыть карточку и вернуть жизнь</button>
+    <button class="btn ghost" id="btnTomorrow">Вернусь завтра</button>
+  </section>
+
+  <!-- 6. Финал -->
+  <section class="screen" id="sFinal" hidden>
+    <div>
+      <div class="tag">Весь дом в аромате</div>
+      <h2>Ты различаешь ароматы AirWick</h2>
+    </div>
+    <div style="display:flex;align-items:flex-end;gap:10px">
+      <div class="score-big" id="fScore">0</div><div class="muted" style="padding-bottom:6px">очков за игру</div>
+    </div>
+    <div class="coupon">
+      <div class="tag">Купон на диффузор AirWick</div>
+      <code id="fCode">AW-8M-XXXX</code>
+      <p class="muted">Действует в корзине Ozon на диффузоры AirWick до 8 марта</p>
+    </div>
+    <div class="rule"><div class="num">★</div><p><b>Ты в недельной таблице.</b> <span class="muted">Сто лучших игроков недели получают набор диффузоров AirWick на все четыре комнаты</span></p></div>
+    <div class="tag">Твои ароматы</div>
+    <div id="fList" style="display:grid;gap:8px"></div>
+    <button class="btn" id="btnChallenge">Бросить вызов подруге</button>
+    <button class="btn ghost" id="btnRestart">Сыграть ещё раз</button>
+  </section>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+const S = {
+  'Апельсин и бергамот':   {g:['#ffb347','#f08a24'], c:['Воскресный завтрак: солнце на скатерти и чашка чая','Сочный апельсин и чайная горчинка','Та самая нота из чая эрл грей'], where:'гостиную'},
+  'Тропический букет':     {g:['#ff7eb3','#ffb86c'], c:['Отпуск, который не заканчивается в понедельник','Яркие цветы и спелые фрукты','Цветы из жарких стран'], where:'гостиную'},
+  'Цитрусовая цедра':      {g:['#f9e04b','#9bd35a'], c:['Кто-то в комнате только что почистил мандарин','Бодрая кислинка без цветочных нот','Самая душистая часть кожуры'], where:'гостиную'},
+  'Нежность шёлка и лилии':{g:['#f4eefc','#d5c6f0'], c:['Свежее постельное бельё после глажки','Белые цветы и прохладная гладкая ткань','Ткань, которая холодит кожу, и белый цветок'], where:'спальню'},
+  'Ирис':                  {g:['#9f86e0','#5b49b8'], c:['Спокойный вечер без телефона','Пудровый фиолетовый цветок','Так же называется радужная оболочка глаза'], where:'спальню'},
+  'Магнолия и вишня':      {g:['#ffd1dc','#e88aa8'], c:['Весенний парк, где деревья цветут раньше листьев','Крупные кремовые цветы и сладкая ягода','Два цветущих дерева сразу'], where:'спальню'},
+  'Лимон и женьшень':      {g:['#fff27a','#c9b26b'], c:['Вторая чашка кофе, только без кофе','Кислый цитрус и пряный корень','Корень, который заваривают для бодрости'], where:'кабинет'},
+  'Воздушная свежесть':    {g:['#e6f4ff','#9cc9f0'], c:['Открыли окно после долгого созвона','Чистый воздух и лёгкая прохлада','То, чем мы дышим'], where:'кабинет'},
+  'Голубая лагуна':        {g:['#63d4e6','#2a7fc9'], c:['Морской бриз в комнате, где моря не видно','Солёная вода и прохлада','Цвет воды в тёплом заливе'], where:'кабинет'},
+  'Дикий гранат':          {g:['#e2465c','#8e1b3a'], c:['Гости на пороге, и дом сразу их встречает','Терпкая красная ягода с косточками','Фрукт, который едят по зёрнышку'], where:'прихожую'},
+  'Апельсин и грейпфрут':  {g:['#ff9a5a','#ff5f6d'], c:['Утро понедельника, которое неожиданно нравится','Сладкий и горьковатый цитрус вместе','Два цитруса, один из них розовый внутри'], where:'прихожую'},
+  'Вишнёвый сад':          {g:['#c2185b','#6a1b4d'], c:['Дача в июне, руки в ягодном соке','Спелая ягода и цветущие ветки','Пьеса Чехова называется так же'], where:'прихожую'}
+};
+const ROOMS = [
+  {n:'Гостиная', s:['Апельсин и бергамот','Тропический букет','Цитрусовая цедра']},
+  {n:'Спальня',  s:['Нежность шёлка и лилии','Ирис','Магнолия и вишня']},
+  {n:'Кабинет',  s:['Лимон и женьшень','Воздушная свежесть','Голубая лагуна']},
+  {n:'Прихожая', s:['Дикий гранат','Апельсин и грейпфрут','Вишнёвый сад']}
+];
+const ROUND_SEC = 20, PTS = [300,200,100];
+const $ = id => document.getElementById(id);
+let st;
+function reset(){
+  st = {score:0, lives:3, streak:0, room:-1, round:0, clue:0, t:0, timer:null,
+        rooms: ROOMS.map(()=>({done:false, correct:0, best:null, bestPts:-1}))};
+  hud();
+}
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.hidden = s.id!==id); }
+function hud(){
+  $('hudScore').textContent = st.score.toLocaleString('ru-RU') + ' очков';
+  $('hudLives').textContent = '♥'.repeat(st.lives) + '♡'.repeat(3-st.lives);
+}
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2600); }
+const grad = n => `linear-gradient(135deg,${S[n].g[0]},${S[n].g[1]})`;
+function stars(k){ return '★'.repeat(k)+'☆'.repeat(3-k); }
+
+function renderMap(){
+  const box = $('rooms'); box.innerHTML='';
+  const doneN = st.rooms.filter(r=>r.done).length;
+  ROOMS.forEach((r,i)=>{
+    const R = st.rooms[i], d = document.createElement('div');
+    const open = !R.done && i===doneN;
+    d.className = 'room' + (R.done?' done':'') + (open?' open':'');
+    if(R.done){
+      d.innerHTML = `<div class="glow" style="background:radial-gradient(circle at 30% 30%,${S[R.best].g[0]},${S[R.best].g[1]} 70%)"></div><b>${r.n}</b><small>${R.best}</small><span class="st">${stars(R.correct)}</span>`;
+    } else if(open){
+      d.innerHTML = `<b>${r.n}</b><small>3 аромата</small><span class="st" style="color:var(--violet);letter-spacing:0">Открыта →</span>`;
+      d.onclick = ()=>startRoom(i);
+    } else {
+      d.innerHTML = `<b>${r.n}</b><small>откроется следующей</small><span class="st">🔒</span>`;
+    }
+    box.appendChild(d);
+  });
+  $('mapTitle').textContent = doneN===4 ? 'Весь дом в аромате' : (doneN ? `Готово комнат: ${doneN} из 4` : 'Выбери комнату');
+  $('btnFinal').hidden = doneN<4;
+  show('sMap');
+}
+
+function startRoom(i){ st.room=i; st.round=0; Object.assign(st.rooms[i],{correct:0,best:null,bestPts:-1}); startRound(); }
+function startRound(){
+  if(st.lives<=0){ show('sNoLives'); return; }
+  const room = ROOMS[st.room], name = room.s[st.round];
+  st.clue = 0; st.answer = name;
+  $('rRoom').textContent = room.n;
+  $('rTitle').textContent = `Аромат ${st.round+1} из 3`;
+  $('fb').innerHTML=''; $('btnNext').hidden = true;
+  // варианты: правильный + 3 из остальных
+  const pool = Object.keys(S).filter(k=>k!==name).sort(()=>Math.random()-.5).slice(0,3);
+  const opts = [name, ...pool].sort(()=>Math.random()-.5);
+  const box = $('answers'); box.innerHTML='';
+  opts.forEach(o=>{
+    const b = document.createElement('button'); b.className='ans';
+    b.innerHTML = `<div class="sw" style="background:${grad(o)}"></div><span>${o}</span>`;
+    b.onclick = ()=>pick(b,o);
+    box.appendChild(b);
+  });
+  renderClues(); updStreak();
+  st.t = ROUND_SEC; tick(); clearInterval(st.timer); st.timer = setInterval(tick,1000);
+  show('sRound');
+}
+function renderClues(){
+  const c = S[st.answer].c, names=['Настроение','Ноты','Последняя подсказка'];
+  $('clues').innerHTML = c.map((x,i)=> i<=st.clue
+    ? `<div class="clue"><span class="k">${names[i]}</span>${x}</div>`
+    : `<div class="clue locked">подсказка ${i+1} скрыта</div>`).join('');
+  $('btnHint').disabled = st.clue>=2;
+  $('btnHint').textContent = st.clue>=2 ? 'Подсказок больше нет' : 'Ещё подсказка −100';
+  $('rWorth').textContent = 'за ответ ' + PTS[st.clue];
+}
+function tick(){
+  $('timerBar').style.width = (st.t/ROUND_SEC*100)+'%';
+  if(st.t<=0){ clearInterval(st.timer); timeout(); return; }
+  st.t--;
+}
+function updStreak(){ $('rStreak').innerHTML = st.streak>=3 ? `серия ${st.streak}<span class="mult">×2</span>` : `серия ${st.streak}`; }
+function lock(){ document.querySelectorAll('.ans').forEach(b=>{ b.disabled=true; if(b.textContent.trim()===st.answer) b.classList.add('ok'); }); $('btnHint').disabled=true; }
+function pick(btn,name){
+  clearInterval(st.timer);
+  const R = st.rooms[st.room];
+  if(name===st.answer){
+    st.streak++;
+    const base = PTS[st.clue], bonus = Math.max(0,st.t)*5, mult = st.streak>=3?2:1, pts=(base+bonus)*mult;
+    st.score += pts; R.correct++;
+    if(pts>R.bestPts){ R.bestPts=pts; R.best=name; }
+    lock(); btn.classList.add('ok');
+    $('fb').innerHTML = `<div class="fb good"><b>Верно: +${pts}</b>${mult>1?'<span class="mult">×2</span>':''}<p class="muted" style="margin-top:4px">${base} за подсказку ${st.clue+1}, ${bonus} за скорость. «${name}» обычно ставят в ${S[name].where}</p></div>`;
+  } else {
+    st.streak=0; st.lives--;
+    lock(); btn.classList.add('no');
+    $('fb').innerHTML = `<div class="fb bad"><b>Это был «${st.answer}»</b><p class="muted" style="margin-top:4px">Минус одна жизнь. Запомни: ${S[st.answer].c[1].toLowerCase()}</p></div>`;
+  }
+  hud(); updStreak(); $('btnNext').hidden=false;
+}
+function timeout(){
+  st.streak=0; st.lives--; lock();
+  $('fb').innerHTML = `<div class="fb bad"><b>Время вышло: это «${st.answer}»</b><p class="muted" style="margin-top:4px">Минус одна жизнь</p></div>`;
+  hud(); updStreak(); $('btnNext').hidden=false;
+}
+function next(){
+  if(st.round<2){ st.round++; startRound(); return; }
+  const R = st.rooms[st.room]; R.done = true;
+  if(!R.best){ R.best = ROOMS[st.room].s[0]; }
+  roomDone();
+}
+function roomDone(){
+  const R = st.rooms[st.room], room = ROOMS[st.room];
+  $('dRoom').textContent = room.n;
+  $('dTitle').textContent = R.correct ? `${room.n} наполнена ароматом` : `${room.n} пройдена`;
+  $('dSub').textContent = `Угадано ${R.correct} из 3`;
+  $('dRoomTile').innerHTML = `<div class="glow" style="background:radial-gradient(circle at 30% 30%,${S[R.best].g[0]},${S[R.best].g[1]} 70%)"></div><b style="font-size:18px">${room.n}</b><small>${R.best}</small><span class="st">${stars(R.correct)}</span>`;
+  $('dProd').innerHTML = `<div class="bottle" style="background:${grad(R.best)}"><div class="glass"></div></div><div><b>Диффузор AirWick<br>«${R.best}»</b><p class="muted" style="margin-top:4px">Аромат, который ты угадал быстрее всего в этой комнате</p></div>`;
+  show('sRoomDone');
+}
+function final(){
+  $('fScore').textContent = st.score.toLocaleString('ru-RU');
+  $('fCode').textContent = 'AW-8M-' + Math.random().toString(36).slice(2,6).toUpperCase();
+  $('fList').innerHTML = ROOMS.map((r,i)=>{ const b=st.rooms[i].best; return `<div class="prod" style="padding:8px"><div class="bottle" style="flex-basis:40px;height:48px;background:${grad(b)}"></div><div><b style="font-size:14px">${b}</b><p class="muted">${r.n}</p></div></div>`; }).join('');
+  show('sFinal');
+}
+$('btnStart').onclick = renderMap;
+$('btnHint').onclick = ()=>{ if(st.clue<2){ st.clue++; renderClues(); } };
+$('btnNext').onclick = next;
+$('btnBackMap').onclick = renderMap;
+$('btnFinal').onclick = final;
+$('btnShop').onclick = ()=>toast('В спецпроекте здесь переход в карточку диффузора на Ozon');
+$('btnLife').onclick = ()=>{ st.lives=1; hud(); toast('Карточка открыта, жизнь вернулась'); startRound(); };
+$('btnTomorrow').onclick = ()=>{ toast('Завтра снова три жизни'); renderMap(); };
+$('btnChallenge').onclick = ()=>toast('Подруга получит ссылку: «Угадай аромат, который я выбрала для тебя к 8 марта»');
+$('btnRestart').onclick = ()=>{ reset(); renderMap(); };
+reset();
+// демо-состояния для скриншотов: #demo-round, #demo-map, #demo-done, #demo-final
+(function(){
+  const h = location.hash.replace('#','');
+  if(!h.startsWith('demo-')) return;
+  const fill = (i,best,c)=>Object.assign(st.rooms[i],{done:true,best,correct:c,bestPts:400});
+  if(h==='demo-round'){
+    renderMap(); startRoom(0); clearInterval(st.timer); st.t=12;
+    $('timerBar').style.width='60%'; st.streak=2; st.score=1460; hud();
+    $('btnHint').click();
+    [...document.querySelectorAll('.ans')].find(b=>b.textContent.trim()===st.answer).click();
+  }
+  if(h==='demo-map'){ fill(0,'Апельсин и бергамот',3); fill(1,'Магнолия и вишня',3); st.score=2980; st.lives=2; hud(); renderMap(); }
+  if(h==='demo-done'){ fill(0,'Апельсин и бергамот',3); st.room=1; fill(1,'Магнолия и вишня',3); st.score=2980; hud(); roomDone(); }
+  if(h==='demo-final'){ fill(0,'Апельсин и бергамот',3); fill(1,'Магнолия и вишня',3); fill(2,'Голубая лагуна',2); fill(3,'Дикий гранат',3); st.score=7840; st.lives=2; hud(); final(); $('fCode').textContent='AW-8M-K7QF'; }
+})();
+</script>
